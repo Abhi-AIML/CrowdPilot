@@ -4,6 +4,8 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config_by_name
+import firebase_admin
+from firebase_admin import credentials
 
 # Initialize Limiter for Security
 limiter = Limiter(key_func=get_remote_address)
@@ -22,6 +24,14 @@ def create_app(config_name=None):
     # Initialize Extensions for Security & Cross-Origin
     CORS(app)
     limiter.init_app(app)
+
+    # Initialize Firebase for robust Auth & Storage (Google Services Integration)
+    try:
+        if not firebase_admin._apps:
+            cred = credentials.ApplicationDefault()
+            firebase_admin.initialize_app(cred, {'projectId': 'prompt-wars-demo'})
+    except Exception as e:
+        app.logger.warning(f"Firebase initialization skipped for demo: {e}")
 
     # Register Blueprints for Modular Architecture
     from blueprints.crowd import crowd_bp
