@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="app-container">
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="home">
+            <span class="icon">🏠</span> Home
+        </button>
+        <button class="tab-btn" data-tab="heatmap">
+            <span class="icon">🛰️</span> Heatmap
+        </button>
+        <button class="tab-btn" data-tab="queues">
+            <span class="icon">🚶</span> Queues
+        </button>
+        <button class="tab-btn" data-tab="concierge">
+            <span class="icon">🤖</span> AI Chat
+        </button>
+        <button class="tab-btn" data-tab="exit">
+            <span class="icon">🚪</span> Exit
+        </button>
+    </nav>
+
+    <!-- Tab 1: Home Dashboard -->
+    <div id="tab-home" class="tab-content active">
+        <div class="dashboard-grid">
+            <div class="stat-card glass">
+                <div class="stat-header">Current Phase <span>Live</span></div>
+                <div class="stat-value" id="current-phase">Kickoff</div>
+                <div class="stat-footer" id="phase-time">19:48 IST</div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-header">Avg Stadium Density</div>
+                <div class="stat-value"><span id="avg-density">42</span>%</div>
+                <div class="stat-footer trend-down">▼ 4% from last period</div>
+            </div>
+            <div class="stat-card glass pulse-critical" id="alert-card" style="display: none;">
+                <div class="stat-header" style="color: white;">Critical Alert</div>
+                <div class="stat-value" id="alert-zone">Gate 1</div>
+                <div class="stat-footer" style="color: white;">High density surge detected!</div>
+            </div>
+            <div class="stat-card glass">
+                <div class="stat-header">Safest Entry</div>
+                <div class="stat-value" id="safe-gate">Gate 5</div>
+                <div class="stat-footer">2 min expected wait</div>
+            </div>
+        </div>
+        
+        <div class="glass" style="margin-top: 2rem; padding: 1.5rem; border-radius: var(--radius-lg);">
+            <h3 style="margin-bottom: 1rem;">Live Security Feed</h3>
+            <div id="alert-ticker" class="ticker-scroll">
+                <span class="ticker-item">● All security zones reporting stable flow</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: Heatmap -->
+    <div id="tab-heatmap" class="tab-content">
+        <div class="map-container glass" style="height: 60vh; position: relative;">
+            <div id="map-canvas" style="height: 100%; width: 100%; border-radius: var(--radius-lg);"></div>
+            <div class="map-ticker" id="map-ticker-inner" style="position: absolute; top: 10px; left: 10px; z-index: 10;"></div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Queue Finder -->
+    <div id="tab-queues" class="tab-content">
+        <h3>Live Gate Wait Times</h3>
+        <p style="color: var(--color-text-dim); margin-bottom: 1.5rem;">Sorted by shortest arrival time</p>
+        <div class="queue-list" id="queue-list">
+            <!-- Populated by JS -->
+            <div class="queue-item glass">
+                <div class="queue-info">
+                    <h4>Gate 5 (Kabbon Park)</h4>
+                    <p>Steady flow · ♿ Accessible</p>
+                </div>
+                <div class="queue-time">
+                    <span class="time-val">2 min</span>
+                    <span class="time-label">Wait time</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: AI Concierge -->
+    <div id="tab-concierge" class="tab-content">
+        <div class="chat-window glass">
+            <div id="chat-messages" class="chat-history">
+                <div class="chat-bubble ai-bubble">
+                    Welcome to Chinnaswamy. I'm your CrowdPilot assistant. How can I help you today?
+                </div>
+            </div>
+            <form id="chat-form" class="chat-input-area">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Ask about gates, food, or safety..." autocomplete="off">
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tab 5: Exit Planner -->
+    <div id="tab-exit" class="tab-content">
+        <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg); text-align: center;">
+            <h2 style="margin-bottom: 1rem;">Smart Exit Planner</h2>
+            <p style="color: var(--color-text-dim); margin-bottom: 2rem;">Safety score for your current area: <strong style="color: var(--color-primary);" id="safety-score">--%</strong></p>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 0.5rem;">Recommended Exit Strategy</h4>
+                <p id="exit-advice">Calculating safest route out based on live crowd flow...</p>
+            </div>
+            
+            <button class="btn btn-primary" onclick="window.generateExitPath()">Calculate & Draw Route</button>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="emergency-strip">IN CASE OF EMERGENCY CALL 100 / 108</div>
+        CrowdPilot 1.0 · Venue Control: Gate 1
+    </footer>
+
+    <!-- Onboarding Modal -->
+    <div id="onboarding-modal" class="onboarding-modal" style="display: none;">
+        <div class="onboarding-card">
+            <div class="onboarding-slides" id="onboarding-slides">
+                <!-- Slide 1 -->
+                <div class="onboarding-slide">
+                    <div class="slide-icon">🛡️</div>
+                    <h2>Welcome to CrowdPilot</h2>
+                    <p>Experience the next generation of stadium safety. We monitor crowd density in real-time to keep you safe.</p>
+                </div>
+                <!-- Slide 2 -->
+                <div class="onboarding-slide">
+                    <div class="slide-icon">🛰️</div>
+                    <h2>Live Operations Map</h2>
+                    <p>Track live crowd heatmaps and traffic congestion around Chinnaswamy Stadium with satellite precision.</p>
+                </div>
+                <!-- Slide 3 -->
+                <div class="onboarding-slide">
+                    <div class="slide-icon">🚶</div>
+                    <h2>Intelligent Queues</h2>
+                    <p>Avoid the Gate 1 surge. Check live wait times for every entry point before you arrive.</p>
+                </div>
+                <!-- Slide 4 -->
+                <div class="onboarding-slide">
+                    <div class="slide-icon">🤖</div>
+                    <h2>Real-Time AI Guardian</h2>
+                    <p>Our AI concierge is context-aware. Ask it for the safest routes or food stall locations anytime.</p>
+                </div>
+                <!-- Slide 5 -->
+                <div class="onboarding-slide">
+                    <div class="slide-icon">🚪</div>
+                    <h2>Smart Exit Planner</h2>
+                    <p>As the match ends, we calculate the safest path out, helping you avoid bottlenecks automatically.</p>
+                </div>
+            </div>
+
+            <div class="onboarding-controls">
+                <div class="carousel-dots" id="carousel-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                <button id="next-onboarding" class="btn btn-primary" style="padding: 0.6rem 2rem;">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/map.js') }}" defer></script>
+<script>
+    // Tab Controller
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            
+            // UI Update
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Map resize if needed
+            if(tabId === 'heatmap' && typeof google !== 'undefined') {
+                google.maps.event.trigger(map, 'resize');
+            }
+        });
+    });
+
+    // Chat Logic
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = chatInput.value.trim();
+        if(!msg) return;
+
+        appendMsg(msg, 'user');
+        chatInput.value = '';
+
+        try {
+            const res = await fetch('/api/concierge/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+            appendMsg(data.response, 'ai');
+        } catch (err) {
+            appendMsg("Error connecting to AI service.", 'ai');
+        }
+    });
+
+    function appendMsg(text, sender) {
+        const div = document.createElement('div');
+        div.className = `chat-bubble ${sender}-bubble`;
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Dynamic Updates for Stats & Queues (Wire to SSE)
+    // This will be handled in map.js shared logic or here
+    // Onboarding Carousel Logic
+    let currentSlide = 0;
+    const slides = document.getElementById('onboarding-slides');
+    const dots = document.querySelectorAll('.dot');
+    const modal = document.getElementById('onboarding-modal');
+    const nextBtn = document.getElementById('next-onboarding');
+
+    function updateCarousel() {
+        slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+        dots.forEach((dot, idx) => {
+            dot.classList.toggle('active', idx === currentSlide);
+        });
+        if (currentSlide === 4) {
+            nextBtn.textContent = 'Get Started';
+        }
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < 4) {
+            currentSlide++;
+            updateCarousel();
+        } else {
+            modal.style.display = 'none';
+            sessionStorage.setItem('crowdpilot_onboarded', 'true');
+        }
+    });
+
+    // Show only if not onboarded this session
+    if (!sessionStorage.getItem('crowdpilot_onboarded')) {
+        setTimeout(() => {
+            modal.style.display = 'flex';
+        }, 1000);
+    }
+</script>
+{% endblock %}

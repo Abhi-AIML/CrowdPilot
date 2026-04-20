@@ -1,0 +1,163 @@
+/* ─── Map Container ─────────────────────────────────────────────── */
+.map-panel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#map-canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 500px;
+  background: #0B1929;
+}
+
+/* ─── Ticker Bar ────────────────────────────────────────────────── */
+.map-ticker {
+  background: rgba(11, 25, 41, 0.95);
+  border-bottom: 2px solid #00E676;
+  padding: 8px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.map-ticker-inner {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-scroll 25s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.ticker-item {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  margin-right: 20px;
+}
+
+/* ─── Zone Overlays ─────────────────────────────────────────────── */
+.zone-overlay {
+  position: absolute;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+}
+
+.zone-pin {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zone-pin__badge {
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  border: 2px solid var(--pin-stroke);
+}
+
+.zone-pin__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--pin-color);
+  opacity: 0;
+}
+
+.zone-pin--pulse .zone-pin__ring {
+  animation: ring-pulse 2s ease-out infinite;
+}
+
+@keyframes ring-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.zone-chip {
+  background: rgba(11, 25, 41, 0.9);
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #fff;
+}
+
+/* ─── Info Card ─────────────────────────────────────────────────── */
+.zone-info-card {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  width: 240px;
+  background: #102236;
+  border-radius: 12px;
+  padding: 15px;
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 100;
+}
+
+.zone-info-card__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.zone-info-card__header h3 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.zone-action-btn--primary {
+  width: 100%;
+  background: #00E676;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  color: #000;
+  font-weight: 700;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+/* ─── Controls ──────────────────────────────────────────────────── */
+.map-controls {
+  margin: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.map-ctrl-btn {
+  background: #102236;
+  color: #fff;
+  border: 1px solid #00E676;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.map-legend {
+  margin: 10px;
+  padding: 10px;
+  background: #102236;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 11px;
+}

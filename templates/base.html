@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdPilot — Stadium Safety & Navigation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header role="banner" class="app-header">
+        <div class="app-logo">Crowd<span>Pilot</span></div>
+        <div class="connection-status">
+            <span class="conn-dot conn-dot--live"></span> Live Mode
+        </div>
+    </header>
+
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer role="contentinfo" class="emergency-footer">
+        <div class="emergency-links">
+            <span>Emergency:</span>
+            <a href="tel:100" aria-label="Call Police">Police: 100</a>
+            <a href="tel:108" aria-label="Call Ambulance">Ambulance: 108</a>
+            <span>Venue Control Room: Gate 1</span>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    
+    <!-- Google Maps JS API -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=visualization&callback=initMap&loading=async"
+        defer>
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

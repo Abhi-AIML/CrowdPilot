@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Ops — CrowdPilot Command</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background: #020617;">
+    <div class="app-container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 1.8rem; font-weight: 800;">Staff Operations <span style="color: var(--color-primary);">Command</span></h1>
+            <div class="glass" style="padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.9rem;">
+                Zone: M. Chinnaswamy Control Center
+            </div>
+        </header>
+
+        <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+            <!-- Real-time Metrics Chart -->
+            <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg);">
+                <h3 style="margin-bottom: 1.5rem;">Density Trend (Last 60 mins)</h3>
+                <canvas id="densityChart" style="max-height: 400px;"></canvas>
+            </div>
+
+            <!-- Global Alert Broadcaster -->
+            <div class="glass" style="padding: 2rem; border-radius: var(--radius-lg);">
+                <h3 style="margin-bottom: 1.5rem;">Broadcast Alert</h3>
+                <form id="alert-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: 0.5rem;">Message</label>
+                        <textarea id="alert-msg" class="glass" style="width: 100%; border-radius: 8px; padding: 1rem; color: #fff; border: 1px solid var(--glass-border); min-height: 100px;"></textarea>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: 0.5rem;">Severity</label>
+                        <select id="alert-sev" class="glass" style="width: 100%; border-radius: 8px; padding: 0.8rem; color: #fff; border: 1px solid var(--glass-border);">
+                            <option value="info">Information</option>
+                            <option value="warning">Warning</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Broadcast to All Attendees</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="glass" style="margin-top: 2rem; padding: 2rem; border-radius: var(--radius-lg);">
+            <h3>Live Zone Feed</h3>
+            <div id="staff-zones" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('densityChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Stadium Avg Density %',
+                    data: [],
+                    borderColor: '#10b981',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Connect to SSE
+        const sse = new EventSource('/api/crowd/stream');
+        sse.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            
+            // Update Chart
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            chart.data.labels.push(time);
+            chart.data.datasets[0].data.push(data.average_density);
+            if(chart.data.labels.length > 10) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            chart.update();
+
+            // Update Zones Grid
+            const grid = document.getElementById('staff-zones');
+            grid.innerHTML = data.zones.map(z => `
+                <div class="glass" style="padding: 1rem; border-radius: 8px; border-left: 4px solid ${z.density > 80 ? '#ef4444' : '#10b981'}">
+                    <div style="font-size: 0.75rem; color: var(--color-text-dim)">${z.zone_id.toUpperCase()}</div>
+                    <div style="font-size: 1.2rem; font-weight: 700;">${z.density}%</div>
+                    <div style="font-size: 0.7rem;">${z.trend.toUpperCase()}</div>
+                </div>
+            `).join('');
+        };
+
+        // Alert Broadcaster
+        document.getElementById('alert-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('alert-msg').value;
+            const sev = document.getElementById('alert-sev').value;
+            
+            await fetch('/api/alerts/broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer demo-token' },
+                body: JSON.stringify({ message: msg, severity: sev })
+            });
+            alert('Alert broadcasted successfully.');
+            document.getElementById('alert-msg').value = '';
+        };
+    </script>
+</body>
+</html>
