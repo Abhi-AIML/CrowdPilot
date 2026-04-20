@@ -17,7 +17,7 @@ In June 2025, after RCB's victory, 35,000+ fans descended on M.G. Road. With no 
 
 ## 🛠️ Google Technology Stack
 
-### 1. Google Gemini 1.5 Flash (Operations Concierge)
+### 1. Google Gemini 3.1 Flash (Operations Concierge)
 - **Real-Time Context Injection**: Every AI chat request is injected with a live snapshot of stadium densities and wait times.
 - **Concise & Authoritative**: Tuned for zero-filler, factual safety advice.
 - **Emergency Keyword Bypass**: Instant 0ms response for critical safety keywords (fire, medical, etc.).
