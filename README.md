@@ -78,15 +78,6 @@ In June 2025, after RCB's victory, 35,000+ fans descended on M.G. Road. With no 
    - **Attendee View**: `http://127.0.0.1:5000`
    - **Staff View**: `http://127.0.0.1:5000/staff`
 
----
-
-## 🏅 Submission Criteria Alignment
-
-- **Code Quality**: PEP8 compliant Python, clean modular Blueprints.
-- **Security**: Strict rate limiting and environment variable protection.
-- **Efficiency**: SSE-driven live updates (low overhead compared to polling).
-- **Testing**: Ready for `pytest` integration with mock simulator states.
-- **Google Integration**: Deep-linking of Gemini Pro 1.5 and Maps JS SDK.
 
 ---
-*Created for the Google AI Hackathon 2026. Safety first.*
+*Created for the Google AI PrompWars 2026. Safety first.*
