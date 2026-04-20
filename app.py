@@ -4,16 +4,27 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config_by_name
+from flask_compress import Compress
 import firebase_admin
 from firebase_admin import credentials
 
 # Initialize Limiter for Security
 limiter = Limiter(key_func=get_remote_address)
+compress = Compress()
 
-def create_app(config_name=None):
+def create_app(config_name: str = None) -> Flask:
     """
     Application Factory - Standard Flask Pattern.
-    Focuses on Google GenAI & Maps integrations.
+    
+    Initializes the Flask app with all security middlewares, global rate 
+    limiting, Gzip compression, and integrates deeply with Google GenAI, 
+    Google Maps, Firebase, and Google Cloud operations suite.
+    
+    Args:
+        config_name (str, optional): The environment name to load config for.
+        
+    Returns:
+        Flask: The fully configured Flask WSGI application.
     """
     if not config_name:
         config_name = os.getenv('FLASK_ENV', 'development')
@@ -21,9 +32,18 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
 
-    # Initialize Extensions for Security & Cross-Origin
+    # Initialize Extensions for Security, Cross-Origin, and Efficiency
     CORS(app)
     limiter.init_app(app)
+    compress.init_app(app)
+
+    # Initialize Google Cloud Logging (Google Services Integration)
+    try:
+        import google.cloud.logging
+        client = google.cloud.logging.Client()
+        client.setup_logging()
+    except Exception as e:
+        app.logger.warning(f"Google Cloud Logging skipped for local demo: {e}")
 
     # Initialize Firebase for robust Auth & Storage (Google Services Integration)
     try:
